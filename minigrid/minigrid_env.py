@@ -4,6 +4,7 @@ import hashlib
 import math
 from abc import abstractmethod
 from typing import Any, Iterable, SupportsFloat, TypeVar
+from enum import IntEnum
 
 import gymnasium as gym
 import numpy as np
@@ -45,6 +46,7 @@ class MiniGridEnv(gym.Env):
         highlight: bool = True,
         tile_size: int = TILE_PIXELS,
         agent_pov: bool = False,
+        actions: IntEnum | None = None,
     ):
         # Initialize mission
         self.mission = mission_space.sample()
@@ -57,7 +59,7 @@ class MiniGridEnv(gym.Env):
         assert width is not None and height is not None
 
         # Action enumeration for this environment
-        self.actions = Actions
+        self.actions = Actions if actions is None else actions
 
         # Actions are discrete integer values
         self.action_space = spaces.Discrete(len(self.actions))
@@ -90,6 +92,7 @@ class MiniGridEnv(gym.Env):
         self.render_size = None
         self.window = None
         self.clock = None
+        self.step_count = 0
 
         # Environment configuration
         self.width = width

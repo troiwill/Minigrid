@@ -16,10 +16,25 @@ class ManualControl:
         self,
         env: Env,
         seed=None,
+        key_to_action: dict = dict(),
     ) -> None:
         self.env = env
         self.seed = seed
         self.closed = False
+        if len(key_to_action) > 0:
+            self.key_to_action = key_to_action.copy()
+        else:
+            self.key_to_action = {
+                "left": Actions.left,
+                "right": Actions.right,
+                "up": Actions.forward,
+                "space": Actions.toggle,
+                "pageup": Actions.pickup,
+                "pagedown": Actions.drop,
+                "tab": Actions.pickup,
+                "left shift": Actions.drop,
+                "enter": Actions.done,
+            }
 
     def start(self):
         """Start the window display with blocking event loop"""
@@ -62,19 +77,8 @@ class ManualControl:
             self.reset()
             return
 
-        key_to_action = {
-            "left": Actions.left,
-            "right": Actions.right,
-            "up": Actions.forward,
-            "space": Actions.toggle,
-            "pageup": Actions.pickup,
-            "pagedown": Actions.drop,
-            "tab": Actions.pickup,
-            "left shift": Actions.drop,
-            "enter": Actions.done,
-        }
-        if key in key_to_action.keys():
-            action = key_to_action[key]
+        if key in self.key_to_action.keys():
+            action = self.key_to_action[key]
             self.step(action)
         else:
             print(key)

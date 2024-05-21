@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import copy
 import math
 from abc import abstractmethod
 from typing import Any, Iterable, SupportsFloat, TypeVar
@@ -47,6 +48,8 @@ class MiniGridEnv(gym.Env):
         tile_size: int = TILE_PIXELS,
         agent_pov: bool = False,
         actions: IntEnum | None = None,
+        observation_space: Any | None = None,
+        reward_range: tuple[int, int] | None = None,
     ):
         # Initialize mission
         self.mission = mission_space.sample()
@@ -71,22 +74,31 @@ class MiniGridEnv(gym.Env):
 
         # Observations are dictionaries containing an
         # encoding of the grid and a textual 'mission' string
-        image_observation_space = spaces.Box(
-            low=0,
-            high=255,
-            shape=(self.agent_view_size, self.agent_view_size, 3),
-            dtype="uint8",
-        )
-        self.observation_space = spaces.Dict(
-            {
-                "image": image_observation_space,
-                "direction": spaces.Discrete(4),
-                "mission": mission_space,
-            }
-        )
+        if observation_space is None:
+            image_observation_space = spaces.Box(
+                low=0,
+                high=255,
+                shape=(self.agent_view_size, self.agent_view_size, 3),
+                dtype="uint8",
+            )
+            self.observation_space = spaces.Dict(
+                {
+                    "image": image_observation_space,
+                    "direction": spaces.Discrete(4),
+                    "mission": mission_space,
+                }
+            )
+        else:
+            self.observation_space = copy.deepcopy(observation_space)
 
         # Range of possible rewards
-        self.reward_range = (0, 1)
+        if reward_range is None:
+            self.reward_range = (0, 1)
+        else:
+            assert isinstance(reward_range, tuple)
+            assert len(reward_range) == 2
+            assert int(reward_range[0]) < int(reward_range[1])
+            self.reward_range = (int(reward_range[0]), int(reward_range[1]))
 
         self.screen_size = screen_size
         self.render_size = None
